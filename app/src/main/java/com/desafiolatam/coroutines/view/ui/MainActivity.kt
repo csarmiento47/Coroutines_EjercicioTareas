@@ -30,8 +30,27 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        lifecycleScope.launchWhenCreated { viewModel.getTasks() }
+
         getTaskList()
+        getUIState()
         insertTask(newTask)
+    }
+
+    private fun getUIState() {
+        lifecycleScope.launchWhenCreated {
+            viewModel.uiState.collectLatest { state ->
+                state?.let {
+                    when (it) {
+                        is TaskViewModel.UIState.Success ->
+                            Toast.makeText(this@MainActivity, "OK", Toast.LENGTH_SHORT).show()
+                        is TaskViewModel.UIState.Error ->
+                            Toast.makeText(this@MainActivity, "Error", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
     }
 
     private fun getTaskList() {
